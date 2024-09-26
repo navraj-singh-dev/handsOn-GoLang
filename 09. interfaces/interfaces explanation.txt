@@ -1,0 +1,47 @@
+-- My Personal Explanation For Interface With Respect To Structs --
+
+- For example if
+  struct a has method -> a.Save() 
+  struct b has method -> b.Save()
+  struct x has method -> x.Save()
+  
+  All these have same functionality of saving the instance as a file on SSD of laptop.
+  Whole reason to create 3 logically identical Save() methods was to save the specific
+  type of struct instance. 
+  
+  If i want to save "struct a" then i must only call the a.Save() method not the b.Save()
+  or x.Save() . The reason is that the save() method can accept only that struct as argument
+  which it belongs to. Through its receiver a method can only be connected to one struct not many.
+  Meaning if you have x amount of structs then a function can only be a receiver to one struct type
+  only, not all 3.
+  
+  This is still fine but can we improve it ? Can we have a single function that can make this
+  happen? Can a single function accept any of these x amount of struct types as argument?
+  
+  Like for this example can i create a Entirely new Save() function that can accept
+  the either struct a, struct b or struct x ? 
+  I am not talking about accepting all the a, b, x structs at the same time, i am talking
+  about that this function Save() will only accept one argument, but this one argument can
+  either be a, b, or x struct. Save() will be so flexible that i can accept any of these struct
+  types.
+
+  Yes! The answer is ofcourse "Interfaces". This new Save() function will accept this interface 
+  as argument only, and all the structs a, b, x will be the part of this struct. So function will
+  accept not the structs but the interface as argument. As interface is grouping all these a,b,x
+  structs in itself, when my new function Save(<interface>) will take this interface as argument..
+  it will be also able to accept any of the structs that are coming under this interface.
+
+  The independant implementation Save() across structs of a.Save(), b.Save(), c.Save(), x.Save()
+  will exactlt remain and will not be deleted, because it is very visible through this explanation that
+  Save(<interface>) is internally just calling the <struct name>.Save() method of whatever struct
+  [a, b, c, x] is passed as argument to the Save(<interface>).
+
+  Meaning if i pass struct "a" as argument to Save(<interface>) it will ofcourse call the a.Save()
+  method that is very obvious. If i pass struct "b" then b.Save() will be called, because all of the
+  structs a, b, c, x are satisfying the <interface> and are implementing their own version of Save().
+  But in the end instead of calling Save() function manually in the code respectfully to the struct 
+  we are using, we can simply make a function that does this for us. That function will have parameter
+  of <interface>, this interface will be signed|satisfied by all the structs. Now all these structs can
+  be given as argument to this function.
+
+  I hope i am clear.  

@@ -1,0 +1,62 @@
+
+--- Empty Interfaces ---
+
+- Now a empty interface is a special data type in go. If one set it as a parameter for the
+  function then that function can accept any data-type (built-in or custom created) as argument.
+
+- For example our fmt.Println() can accept any data type as argument, because has a empty interface
+  set as its parameter. So it can basically print any data type you pass it as the argument if it is
+  printable.
+
+- Empty interfaces solve the problem of creating many standone functions that run the same code but
+  are built to handle a single data-type only. Like int, float, string. Meaning you have to create 3
+  different functions with the same code just because go needs to know the data-type of the argument
+  being passed to the function before hand and it cannot dynamically adjust the parameter's data-type
+  like python functions can. So either you create 3 different functions or handle this data-type problem
+  inside of the single function itself where you need to very long codes.
+  But empty interface as a parameter to a functions easily solves this problem, now the go function can
+  easily accept any data-type as argument.
+
+- Now empty interfaces also creates many problems. Like what if you dont really want to accept any 
+  random data-type as argument? Like what if you just want the function to accept either int|float|string
+  as arguments and not custom data types like a random struct you created or other random data-type you 
+  created? And what if you functions are gonna be put into a package which other people are gonna use?
+  They might create their own structs and custom data-types and pass those to your function and your
+  functions will accept it because of empty interface but i will fail and stop as it do not know how to
+  handle this custom stucts and custom data-types of other users.
+  This is where we have many solutions to cover it up:
+  
+  - switch statement + <variable-name>.(<data-type>)
+    In the function write this type of switch statement to handle the cases
+    In this type of switch statement the cases are running on the data-type of
+    variable not the value of the variable. So .type() gives us the actual data type
+    of the variable then we create cases like: case Int {}, case String {} etc. to handle
+    only those data type we want to handle. Now even if we get some unknown custom data-type
+    as argument.. our function has special switch statement set inside of it which only runs
+    when the known data-type matches one of the case.
+
+  - value, ok := <variable-name>.(type)
+    if !ok {<code>}
+    Write .(type) as it is.
+    This is exactly same as the switch statement, just the syntax and way is different.
+    Here we take the argument then put it in this syntax to check if it matches the data
+    type we want to handle. If yes then we do what we want to do in logic. This checking
+    if the data-type of argument is what we want is known through setting up a if statement
+    of "ok". This syntax give two return values: the actual value of the argument and a "ok"
+    which is boolean which tells whether the argument being checked has passed the data-type
+    check.
+  
+  - using generics: func function-name[T any, X int|Float64|string](a T, b X) {}
+    Here i am saying this function accpets two arguments a, b then i am using [] syntax which 
+    is saying that "a" can be "any" data-type, this is exactly same as empty interface{}, but 
+    in generics interface{} has a shortcut as "any" and b can only be one of the 3 mentioned
+    data types. So to this function i can pass any data type at the place of argument "a" and
+    int, float, string at the argument at the place of argument "b"0.
+    This is because the T in [] is representing a empty interface, the X is representing int
+    or float64 or string. Then i use these two placeholder T & X with the parameters a and b.
+    
+
+- Rememeber the parameter of the function which is empty interface is still there it is not gone anywhere.
+  Only during usage of generics we dont need to define interface{} as parameter because we have [] syntax
+  in which we can use the shorthand of keyword "any" instead of writing interface{}.
+
