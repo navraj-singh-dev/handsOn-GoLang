@@ -3,11 +3,14 @@ package models
 import "time"
 
 type Event struct {
+	// struct tags are supported by GIN
+	// here i am using tags to make some of the fields as must 'required',
+	// which a user must send in POST request other-wise error will be sent as response
 	ID          int
-	Name        string
-	Description string
-	Location    string
-	DateTime    time.Time
+	Name        string    `binding:"required"`
+	Description string    `binding:"required"`
+	Location    string    `binding:"required"`
+	DateTime    time.Time `binding:"required"`
 	UserID      int
 }
 
