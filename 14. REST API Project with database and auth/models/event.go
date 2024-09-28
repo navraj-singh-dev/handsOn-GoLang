@@ -73,8 +73,15 @@ func GetAllEvents() ([]Event, error) {
 	return events, nil
 }
 
-// -- some explanation on different things
+func GetEventByID(id int64) (*Event, error) {
+	query := "SELECT * FROM events WHERE id = ?"
+	row := db.DB.QueryRow(query, id)
 
-//	if your query changes, adds data to the database then use .Exec()
-//	if your query reads, fetches data to the database then use .Query()
-//	if your query is complex, large and needs to be fast then use .Prepare()
+	var event Event
+	err := row.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &event.DateTime, &event.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &event, nil
+}
