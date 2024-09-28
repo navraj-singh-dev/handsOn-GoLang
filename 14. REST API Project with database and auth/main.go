@@ -3,11 +3,15 @@ package main
 import (
 	"net/http"
 
+	"e.com/events-rest-api/db"
 	"e.com/events-rest-api/models"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	// create/open database connection
+	db.InitDB()
+
 	// gives a pre-configured http server
 	server := gin.Default()
 

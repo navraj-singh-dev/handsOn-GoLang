@@ -2,11 +2,8 @@ package db
 
 import (
 	"database/sql"
-
-	// Note:
-	//	'sqlite3' will not be used directly by me, as it will be used behind the scenes by database/sql
-	//	package. But still i need it, so i will add _ in front of sqlite3 import statement to tell go
-	//	that i need this package but it will not be used directly
+	// sqlite3 is being used behind the scenes by sql package, it is not used directly in code
+	// _ tells go that this package needs to be imported by not used directly
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -15,19 +12,38 @@ var DB *sql.DB
 
 // opens a connection to the local database
 func InitDB() {
+	var err error
 	// sqlite3 will be used as driver, api.db file is local.. which will act as database for us
 	// if api.db is not found then it will be created
-	DB, err := sql.Open("sqlite3", "api.db")
-
+	DB, err = sql.Open("sqlite3", "api.db")
 	if err != nil {
-		panic("cannot connect with database...")
+		panic("cannot connect to database...")
 	}
 
-	// keep open 10 connection to this database simultaneously
-	// upper bound
-	DB.SetMaxOpenConns(10)
-	// if database is idle then keep 5 connection opened
-	// lower bound
-	DB.SetMaxIdleConns(5)
+	// Set database connection pool parameters
+	DB.SetMaxOpenConns(10) // upper bound of connections
+	DB.SetMaxIdleConns(5)  // lower bound of connections
+
+	// create the tables
+	createTables()
 }
 
+func createTables() {
+	// sql query to create an events table
+	createEventTable := `
+	CREATE TABLE IF NOT EXISTS events (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		name TEXT NOT NULL,
+		description TEXT NOT NULL,
+		location TEXT NOT NULL,
+		dateTime DATETIME NOT NULL,
+		user_id INTEGER
+	)
+	`
+	// using global DB variable to execute this sql query and create the table
+	_, err := DB.Exec(createEventTable)
+
+	if err != nil {
+		panic("cannot create 'events' table...")
+	}
+}
