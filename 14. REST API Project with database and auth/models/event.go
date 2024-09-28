@@ -1,12 +1,13 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"e.com/events-rest-api/db"
+)
 
 type Event struct {
-	// struct tags are supported by GIN
-	// here i am using tags to make some of the fields as must 'required',
-	// which a user must send in POST request other-wise error will be sent as response
-	ID          int
+	ID          int64     // sql ID is int64 so this field's datatype was changed to int64
 	Name        string    `binding:"required"`
 	Description string    `binding:"required"`
 	Location    string    `binding:"required"`
@@ -14,16 +15,66 @@ type Event struct {
 	UserID      int
 }
 
-// method to save a event struct instance in a slice
-// just testing out simply, SQL will be included later
-var events = []Event{}
+func (e Event) Save() error {
+	// ? is special character that prevents sql injections
+	// ? is understood by mostly all SQL packages by go
+	query := `
+	INSERT INTO events(name, description, location, dateTime, user_id)
+	VALUES (?, ?, ?, ?, ?)`
 
-func (e Event) Save() {
-	// just temporary testing, SQL will be added later
-	events = append(events, e)
+	// Prepare() put the sql query in RAM so its very fast
+	// mostly used when sql query is very large or complex
+	stmt, err := db.DB.Prepare(query)
+	if err != nil {
+		return err
+	}
+
+	// close the statement at last
+	defer stmt.Close()
+
+	// execute query to create a entry in databse and provide values for all '?' from event instance
+	result, err := stmt.Exec(e.Name, e.Description, e.Location, e.DateTime, e.UserID)
+	if err != nil {
+		return err
+	}
+
+	// take the id of the event entry created in database
+	id, err := result.LastInsertId()
+
+	// in the event struct instance add the ID which came from database
+	e.ID = id
+	return err
+
 }
 
-// method to return all events (which are in slice)
-func GetAllEvents() []Event {
-	return events
+func GetAllEvents() ([]Event, error) {
+	query := "SELECT * FROM events"
+
+	// get back all all event rows from db
+	rows, err := db.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// all database rows will be put into this slice
+	var events []Event
+
+	// iterate over rows and append the populated event struct instance
+	for rows.Next() {
+		var event Event
+		err := rows.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &event.DateTime, &event.UserID)
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, event)
+	}
+
+	return events, nil
 }
+
+// -- some explanation on different things
+
+//	if your query changes, adds data to the database then use .Exec()
+//	if your query reads, fetches data to the database then use .Query()
+//	if your query is complex, large and needs to be fast then use .Prepare()
