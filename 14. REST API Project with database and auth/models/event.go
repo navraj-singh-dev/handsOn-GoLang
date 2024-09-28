@@ -43,6 +43,7 @@ func (e Event) Save() error {
 
 	// in the event struct instance add the ID which came from database
 	e.ID = id
+
 	return err
 
 }
@@ -105,4 +106,17 @@ func (e Event) Update() error {
 	}
 
 	return nil
+}
+
+func (e Event) Delete() error {
+	query := "DELETE FROM events WHERE id = ?"
+
+	stmt, err := db.DB.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(e.ID)
+	return err
 }
