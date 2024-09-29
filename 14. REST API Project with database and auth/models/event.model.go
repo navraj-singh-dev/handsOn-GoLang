@@ -12,10 +12,10 @@ type Event struct {
 	Description string    `binding:"required"`
 	Location    string    `binding:"required"`
 	DateTime    time.Time `binding:"required"`
-	UserID      int
+	UserID      int64
 }
 
-func (e Event) Save() error {
+func (e *Event) Save() error {
 	// ? is special character that prevents sql injections
 	// ? is understood by mostly all SQL packages by go
 	query := `
