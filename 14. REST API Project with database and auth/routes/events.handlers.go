@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"e.com/events-rest-api/models"
-	"e.com/events-rest-api/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -37,28 +36,14 @@ func getEvent(context *gin.Context) {
 }
 
 func createEvent(context *gin.Context) {
-
-	clientToken := context.Request.Header.Get("Authorization")
-
-	if clientToken == "" {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "no JWT token provided..."})
-		return
-	}
-
-	userId, err := utils.VerifyToken(clientToken)
-	if err != nil {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "JWT token verification failed..."})
-		return
-	}
-
 	var event models.Event
-
-	err = context.ShouldBindJSON(&event)
+	err := context.ShouldBindJSON(&event)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "can't parse request data"})
 		return
 	}
 
+	userId := context.GetInt64("userId")
 	event.UserID = userId
 
 	err = event.Save()
